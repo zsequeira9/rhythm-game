@@ -23,3 +23,47 @@ function animate() {
 	renderer.render( scene, camera );
 
 }
+
+// instantiate a listener 
+const audioListener = new THREE.AudioListener(); 
+
+// add the listener to the camera 
+camera.add( audioListener ); 
+
+// instantiate audio object 
+const testAudio = new THREE.Audio( audioListener ); 
+
+// add the audio object to the scene 
+scene.add( testAudio ); 
+
+// instantiate a loader 
+const loader = new THREE.AudioLoader(); 
+
+function buttonLoad() {
+    // load a resource 
+    loader.load( 
+        // resource URL 
+        'public/test1.mp3', 
+
+        // onLoad callback function 
+        ( audioBuffer ) => { 
+            // set the audio object buffer to the loaded object 
+            testAudio.setBuffer( audioBuffer ); 
+            // play the audio 
+            testAudio.play(); 
+
+        // onProgress callback function
+        }, ( xhr ) => { 
+            console.log( (xhr.loaded / xhr.total * 100) + '% loaded' ); 
+
+        // onError callback function
+        }, ( err ) => { 
+            console.log( 'An error happened' ); 
+        } );
+}
+
+
+
+var button1 = document.createElement("button");
+button1.onclick = buttonLoad;
+document.body.appendChild(button1);
