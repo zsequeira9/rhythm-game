@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 
+// create ThreeJS scene
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
@@ -8,6 +9,7 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
 
+// create cube
 const geometry = new THREE.BoxGeometry( 1, 1, 1 );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 const cube = new THREE.Mesh( geometry, material );
@@ -15,55 +17,60 @@ scene.add( cube );
 
 camera.position.z = 5;
 
+
+// create audio analyser node
+const audioCtx = new AudioContext();
+const analyser = audioCtx.createAnalyser();
+let source;
+let buffer;
+
+analyser.fftSize = 32;
+const bufferLength = analyser.frequencyBinCount;
+const dataArray = new Uint8Array(bufferLength);
+analyser.getByteTimeDomainData(dataArray);
+
+/**
+ * Animate the cube based on waveform data
+ */
 function animate() {
-
-	cube.rotation.x += 0.01;
-	cube.rotation.y += 0.01;
-
-	renderer.render( scene, camera );
-
-}
-
-// instantiate a listener 
-const audioListener = new THREE.AudioListener(); 
-
-// add the listener to the camera 
-camera.add( audioListener ); 
-
-// instantiate audio object 
-const testAudio = new THREE.Audio( audioListener ); 
-
-// add the audio object to the scene 
-scene.add( testAudio ); 
-
-// instantiate a loader 
-const loader = new THREE.AudioLoader(); 
-
-function buttonLoad() {
-    // load a resource 
-    loader.load( 
-        // resource URL 
-        'public/test1.mp3', 
-
-        // onLoad callback function 
-        ( audioBuffer ) => { 
-            // set the audio object buffer to the loaded object 
-            testAudio.setBuffer( audioBuffer ); 
-            // play the audio 
-            testAudio.play(); 
-
-        // onProgress callback function
-        }, ( xhr ) => { 
-            console.log( (xhr.loaded / xhr.total * 100) + '% loaded' ); 
-
-        // onError callback function
-        }, ( err ) => { 
-            console.log( 'An error happened' ); 
-        } );
+    analyser.getByteTimeDomainData(dataArray);
+    for (let i = 0; i < bufferLength; i++) {
+    }
+    cube.scale.y = dataArray[0]/128;
+    renderer.render( scene, camera );
 }
 
 
+/**
+ * Load the audio from filesystem
+ */
+function load() {
+  const request = new XMLHttpRequest();
+  request.open("GET", "/test1.mp3");
+  request.responseType = "arraybuffer";
+  request.onload = function() {
+    let undecodedAudio = request.response;
+    audioCtx.decodeAudioData(undecodedAudio, (data) => buffer = data); 
+  };
+  request.send();
+}
 
-var button1 = document.createElement("button");
-button1.onclick = buttonLoad;
-document.body.appendChild(button1);
+
+/**
+ * Play the audio source through destination
+ *  and analyser
+ */
+function play() {
+    source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(analyser);
+    source.connect(audioCtx.destination);
+    source.start();   
+}
+
+// UI
+let button1 = document.getElementById("load");
+button1.onclick = load;
+
+let button2 = document.getElementById("play");
+button2.onclick = play;
