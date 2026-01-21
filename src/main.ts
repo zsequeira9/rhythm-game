@@ -8,13 +8,13 @@ const scene = new THREE.Scene();
 const camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
 
 const renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth, window.innerHeight );
+renderer.setSize( window.innerWidth, window.innerHeight - 50 );
 renderer.setAnimationLoop( animate );
 document.body.appendChild( renderer.domElement );
 const cubes = [] as THREE.Mesh[]
 
 // create cube
-const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+const geometry = new THREE.BoxGeometry( .1, 1, 1 );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 
 
@@ -26,17 +26,20 @@ const audioCtx = new AudioContext();
 const analyser = audioCtx.createAnalyser();
 let source;
 let buffer: AudioBuffer;
+const fftSize = 256;
 
-analyser.fftSize = 256;
+analyser.fftSize = fftSize;
 const bufferLength = analyser.frequencyBinCount;
 const dataArray = new Uint8Array(bufferLength);
-analyser.getByteTimeDomainData(dataArray);
+analyser.getByteFrequencyData(dataArray);
 
-const numCubes = 32;
+const numCubes = 128;
+
+const cubefreq = fftSize / numCubes
 
 for (let i = 0; i < numCubes; i++) {
   const cube = new THREE.Mesh( geometry, material );
-  cube.position.x = i * 1.5 - 12
+  cube.position.x = i * .2 - 14
   cubes.push(cube)
   scene.add(cube);
 }
@@ -45,10 +48,12 @@ for (let i = 0; i < numCubes; i++) {
  * Animate the cube based on waveform data
  */
 function animate() {
-    analyser.getByteTimeDomainData(dataArray);
+    analyser.getByteFrequencyData(dataArray);
     for (let i = 0; i < cubes.length; i++) {
-      const avg = dataArray.slice(i*8, i*8+8).reduce((acc, curr) => acc + curr, 0) / 8
-      cubes[i].scale.y = avg / 128;
+      const avg = dataArray.slice(i*cubefreq, i*cubefreq+cubefreq).reduce(
+        (acc, curr) => acc + curr, 0) / cubefreq
+      cubes[i].scale.y = avg / 10;
+      cubes[i].position.y = -13 + avg / 20;
     }
     
     renderer.render( scene, camera );
@@ -60,7 +65,7 @@ function animate() {
  */
 function load() {
   const request = new XMLHttpRequest();
-  request.open("GET", "/test1.mp3");
+  request.open("GET", "/test4.flac");
   request.responseType = "arraybuffer";
   request.onload = function() {
     let undecodedAudio = request.response;
