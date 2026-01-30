@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import AudioAnalyser from './AudioAnalyser';
+import AudioAnalyser from './audio-analyser';
 
 const width = 30
 const height = 30 
@@ -18,6 +18,7 @@ document.body.appendChild( renderer.domElement );
 const cubes = [] as THREE.Mesh[]
 const geometry = new THREE.BoxGeometry( .1, 1, 1 );
 const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+const beatMaterial = new THREE.MeshBasicMaterial( { color: 0x00fff0, transparent: true } );
 
 // create audio analyser node
 const audioAnalyser = new AudioAnalyser();
@@ -31,6 +32,10 @@ for (let i = 0; i < numCubes; i++) {
   cubes.push(cube)
   scene.add(cube);
 }
+
+const beatCube = new THREE.Mesh( geometry, beatMaterial );
+beatCube.position.x = 10
+scene.add(beatCube);
 
 /**
  * Animate the cubes based on waveform data
@@ -53,7 +58,7 @@ function animate() {
  */
 function play() {
     const request = new XMLHttpRequest();
-    request.open("GET", "/test4.flac");
+    request.open("GET", "/test2.flac");
     request.responseType = "arraybuffer";
     request.onload = function() {
       const undecodedAudio = request.response;
