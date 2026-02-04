@@ -10,7 +10,7 @@ export default class AudioAnalyser {
   bufferLength: number
   dataArray: Uint8Array<ArrayBuffer>
   isBeat: Float32Array<ArrayBuffer>
-  constructor(fftSize = 256) {
+  constructor(fftSize = 2048) {
     this.audioCtx = new AudioContext()
     this.analyser = this.audioCtx.createAnalyser()
     this.processorOutput = this.audioCtx.createAnalyser();
@@ -28,7 +28,8 @@ export default class AudioAnalyser {
 
     get onsetDetection() {
       this.processorOutput.getFloatTimeDomainData(this.isBeat)
-      return this.processorOutput;
+      console.log(this.isBeat)
+      return this.isBeat[0] > .03
     }
 
   /**
