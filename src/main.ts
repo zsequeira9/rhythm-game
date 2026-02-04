@@ -21,11 +21,11 @@ const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
 const beatMaterial = new THREE.MeshBasicMaterial( { color: 0x00fff0, transparent: true } );
 
 // create audio analyser node
-const audioAnalyser = new AudioAnalyser();
+let audioAnalyser: AudioAnalyser = new AudioAnalyser();
 
 // set up vis
 const numCubes = 128;
-const sizeBin = audioAnalyser.fftSize / numCubes
+const sizeBin = 256 / numCubes
 for (let i = 0; i < numCubes; i++) {
   const cube = new THREE.Mesh( geometry, material );
   cube.position.x = i * .2 - 14
@@ -42,6 +42,7 @@ scene.add(beatCube);
  */
 function animate() {
     const freqData = audioAnalyser.frequencyData;
+    console.log(audioAnalyser.onsetDetection)
     for (let i = 0; i < cubes.length; i++) {
       const avg = freqData.slice(i*sizeBin, i*sizeBin+sizeBin).reduce(
         (acc, curr) => acc + curr, 0) / sizeBin
@@ -58,7 +59,7 @@ function animate() {
  */
 function play() {
     const request = new XMLHttpRequest();
-    request.open("GET", "/test2.flac");
+    request.open("GET", "/test5.mp3");
     request.responseType = "arraybuffer";
     request.onload = function() {
       const undecodedAudio = request.response;
