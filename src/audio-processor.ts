@@ -4,7 +4,8 @@ import Essentia from "https://cdn.jsdelivr.net/npm/essentia.js@0.1.3/dist/essent
 let essentia = new Essentia(EssentiaWASM);
 
 class AudioProcessor extends AudioWorkletProcessor {
-  essentia: Essentia
+  essentia: Essentia;
+  lastOnset = false;
   constructor() {
     super();
     this.essentia = essentia;
@@ -20,12 +21,18 @@ class AudioProcessor extends AudioWorkletProcessor {
 
     // convert the input audio frame array from channel 0 to a std::vector<float> type for using it in essentia
     let vectorInput = this.essentia.arrayToVector(input[0]);
+    let spectrum = this.essentia.Spectrum(vectorInput).spectrum
 
-    // In this case we compute the Root Mean Square of every input audio frame
-    // check https://mtg.github.io/essentia.js/docs/api/Essentia.html#RMS
-    let rms = this.essentia.RMS(vectorInput).rms // input audio frame
+    let phase = this.essentia.arrayToVector([])
 
-    output[0][0] = rms;
+    let threshold = 0;
+
+    let onsetDetection = this.essentia.OnsetDetection(spectrum, phase).onsetDetection // input audio frame
+    let tmpOnset = onsetDetection > threshold
+    let onset = !this.lastOnset && tmpOnset
+    this.lastOnset = tmpOnset
+
+    output[0][0] = onset;
 
     return true; // keep the process running
   }

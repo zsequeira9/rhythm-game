@@ -67,7 +67,7 @@ function animate() {
  */
 function play() {
     const request = new XMLHttpRequest();
-    request.open("GET", "/test3.flac");
+    request.open("GET", "/test4.flac");
     request.responseType = "arraybuffer";
     request.onload = function() {
       const undecodedAudio = request.response;
