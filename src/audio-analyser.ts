@@ -16,10 +16,10 @@ export default class AudioAnalyser {
     this.processorOutput = this.audioCtx.createAnalyser();
     this.fftSize = fftSize
     this.analyser.fftSize = this.fftSize;
-    this.processorOutput.fftSize = 8192;
+    this.processorOutput.fftSize = this.fftSize;
     this.bufferLength = this.analyser.frequencyBinCount;
     this.dataArray = new Uint8Array(this.bufferLength)
-    this.isBeat = new Float32Array(8192)
+    this.isBeat = new Float32Array(this.fftSize)
   }
 
   get frequencyData() {
@@ -29,7 +29,7 @@ export default class AudioAnalyser {
 
     get onsetDetection() {
       this.processorOutput.getFloatTimeDomainData(this.isBeat)
-      console.log(this.isBeat)
+      console.log(this.isBeat[0] >= .5)
       return this.isBeat[0] >= .5
     }
 
