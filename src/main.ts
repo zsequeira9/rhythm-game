@@ -45,11 +45,11 @@ scene.add(beatCube);
  */
 function animate() {
     const freqData = audioAnalyser.frequencyData;
-    if (audioAnalyser.onsetDetection) {
+    if (audioAnalyser.onsetDetection && beatCube.material.opacity < .1) {
       beatCube.material.opacity = 1
     }
     else {
-      beatCube.material.opacity = 0
+      beatCube.material.opacity -= .1
     }
     for (let i = 0; i < cubes.length; i++) {
       const avg = freqData.slice(i*sizeBin, i*sizeBin+sizeBin).reduce(
@@ -67,7 +67,7 @@ function animate() {
  */
 function play() {
     const request = new XMLHttpRequest();
-    request.open("GET", "/test4.flac");
+    request.open("GET", "/test1.mp3");
     request.responseType = "arraybuffer";
     request.onload = function() {
       const undecodedAudio = request.response;

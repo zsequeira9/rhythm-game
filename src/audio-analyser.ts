@@ -29,7 +29,6 @@ export default class AudioAnalyser {
 
     get onsetDetection() {
       this.processorOutput.getFloatTimeDomainData(this.isBeat)
-      console.log(this.isBeat[0] >= .5)
       return this.isBeat[0] >= .5
     }
 
