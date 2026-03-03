@@ -33,9 +33,7 @@ class OnsetDetector {
 class AudioProcessor extends AudioWorkletProcessor {
   essentia: Essentia;
   lastOnset = false;
-  detectedHCFOnsets: number[] = [0, 0, 0, 0, 0, 0];
-  detectedFluxOnsets: number[] = [0, 0, 0, 0, 0, 0];
-  buffer: Float32Array<ArrayBuffer> = new Float32Array(1024);
+  buffer: Float32Array<ArrayBuffer> = new Float32Array(512);
   bufferCount: number = 0;
   hcfOnsets: OnsetDetector;
   fluxOnsets: OnsetDetector;
@@ -44,7 +42,7 @@ class AudioProcessor extends AudioWorkletProcessor {
     super();
     this.essentia = new Essentia(EssentiaWASM);
     this.hcfOnsets = new OnsetDetector(this.essentia, "hfc", 0.1)
-    this.fluxOnsets = new OnsetDetector(this.essentia, "flux", 0.1)
+    this.fluxOnsets = new OnsetDetector(this.essentia, "flux", 0.2)
     console.log('Backend - essentia:' + this.essentia.version + '- http://essentia.upf.edu');
   }
 
@@ -62,21 +60,20 @@ class AudioProcessor extends AudioWorkletProcessor {
     let intensity = this.essentia.Loudness(audioDownMixed).loudness;
 
     // set buffer to input, offset by number of times buffer has been set since buffer has been completely filled
-    if (this.bufferCount < 8) {
-      this.buffer.set(audioData, this.bufferCount * audioData.length);
-    }
+    this.buffer.set(audioData, this.bufferCount * audioData.length);
     this.bufferCount += 1;
-    // skip two input cycles
-    this.bufferCount %= 10;
+    this.bufferCount %= 4;
 
-    if (this.bufferCount == 7) {
+    if (this.bufferCount == 3) {
       const signal = this. essentia.arrayToVector(this.buffer);
+
       let spectrum = this.essentia.Spectrum(signal).spectrum;
       
       // flag as onset if either hcf or flux detects onsets
       let tmpHCFOnset = this.hcfOnsets.isOnset(spectrum);
       let tmpFluxOnset = this.fluxOnsets.isOnset(spectrum);
       let onset = !this.lastOnset && (tmpHCFOnset || tmpFluxOnset);
+
       this.lastOnset = tmpHCFOnset || tmpFluxOnset;
 
       outputs[0][0][0] = Number(onset);

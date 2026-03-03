@@ -2,33 +2,34 @@ import { createAudioProcessor } from "./audio-processor-node"
 export default class AudioAnalyser {
   audioCtx: AudioContext
   buffer: AudioBuffer | null = null
-  analyser: AnalyserNode
+  freqAnalyser: AnalyserNode
   processor!: AudioWorkletNode
-  processorOutput: AnalyserNode
+  beatAnalyser: AnalyserNode
 
-  fftSize: number;
-  bufferLength: number
+  fftSize: number
   dataArray: Uint8Array<ArrayBuffer>
   isBeat: Float32Array<ArrayBuffer>
   constructor(fftSize = 2048) {
     this.audioCtx = new AudioContext()
-    this.analyser = this.audioCtx.createAnalyser()
-    this.processorOutput = this.audioCtx.createAnalyser();
-    this.fftSize = fftSize
-    this.analyser.fftSize = this.fftSize;
-    this.processorOutput.fftSize = this.fftSize;
-    this.bufferLength = this.analyser.frequencyBinCount;
-    this.dataArray = new Uint8Array(this.bufferLength)
-    this.isBeat = new Float32Array(this.fftSize)
+    this.freqAnalyser = this.audioCtx.createAnalyser()
+    this.beatAnalyser = this.audioCtx.createAnalyser();
+
+    this.fftSize = fftSize;
+
+    this.freqAnalyser.fftSize = fftSize;
+    this.dataArray = new Uint8Array(this.freqAnalyser.frequencyBinCount)
+
+    this.beatAnalyser.fftSize = 2048;
+    this.isBeat = new Float32Array(this.beatAnalyser.frequencyBinCount)
   }
 
   get frequencyData() {
-    this.analyser.getByteFrequencyData(this.dataArray)
+    this.freqAnalyser.getByteFrequencyData(this.dataArray)
     return this.dataArray;
   }
 
     get onsetDetection() {
-      this.processorOutput.getFloatTimeDomainData(this.isBeat)
+      this.beatAnalyser.getFloatTimeDomainData(this.isBeat)
       return this.isBeat[0] >= .5
     }
 
@@ -44,8 +45,8 @@ export default class AudioAnalyser {
           createAudioProcessor(this.audioCtx).then((processor) => {
             this.processor = processor
             source.connect(this.processor);
-            this.processor.connect(this.processorOutput)
-            source.connect(this.analyser);
+            this.processor.connect(this.beatAnalyser)
+            source.connect(this.freqAnalyser);
             source.connect(this.audioCtx.destination);
             source.start(); 
         })}
