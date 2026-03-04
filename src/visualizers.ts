@@ -32,30 +32,23 @@ export class SpectrumVis {
         const geometry = new THREE.PlaneGeometry( barWidth, 1 );
         var material = new THREE.ShaderMaterial({
         uniforms: {
-            color1: {
-            value: new THREE.Color("green")
-            },
-            color2: {
-            value: new THREE.Color("red")
-            }
+            color1: { value: new THREE.Color("#07F800") },
+            color2: { value: new THREE.Color("red") },
         },
-        vertexShader: `
-            varying vec2 vUv;
-
+        vertexShader: `    
+            varying vec4 vUv;
             void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+                vUv = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
             }
         `,
         fragmentShader: `
             uniform vec3 color1;
             uniform vec3 color2;
+            varying vec4 vUv;
         
-            varying vec2 vUv;
-            
             void main() {
-            
-            gl_FragColor = vec4(mix(color1, color2, vUv.y), 1.0);
+                gl_FragColor = vec4(mix(color1, color2, vUv.y),1.0);
             }
         `,
         });

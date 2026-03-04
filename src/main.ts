@@ -23,7 +23,7 @@ const spectrumVis = new SpectrumVis(renderer, audioAnalyser, width, height)
  */
 function play() {
     const request = new XMLHttpRequest();
-    request.open("GET", "/test4.flac");
+    request.open("GET", "/test10.flac");
     request.responseType = "arraybuffer";
     request.onload = function() {
       const undecodedAudio = request.response;
