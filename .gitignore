@@ -2,3 +2,4 @@ node_modules/
 .idea/
 public/*.flac
 public/*.mp3
+dist/
