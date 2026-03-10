@@ -1,0 +1,42 @@
+{
+    "manifest_version": 2,
+    "name": "Vis",
+    "version": "1.0",
+    "description": "Music Visualization",
+    "homepage_url": "https://github.com/zsequeira9/rhythm-game/tree/main",
+    "icons": {
+        "48": "icons/beasts-48.png"
+    },
+    "permissions": [
+        "tabs",
+        "<all_urls>",
+        "alarms",
+        "contextMenus",
+        "storage",
+        "unlimitedStorage",
+        "webNavigation",
+        "webRequest",
+        "webRequestBlocking"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content_scripts/content.js"
+            ]
+        }
+    ],
+    "background": {
+        "scripts": [
+            "dist/main.bundle.js"
+        ]
+    },
+    "web_accessible_resources": [
+        "/index.html",
+        "/public/test6.mp3"
+        
+    ],
+    "content_security_policy":  "script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'"
+}
