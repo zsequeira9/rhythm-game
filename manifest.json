@@ -24,15 +24,10 @@
                 "<all_urls>"
             ],
             "js": [
-                "content_scripts/content.js"
+                "dist/main.bundle.js"
             ]
         }
     ],
-    "background": {
-        "scripts": [
-            "dist/main.bundle.js"
-        ]
-    },
     "web_accessible_resources": [
         "/index.html",
         "/public/test6.mp3"

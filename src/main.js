@@ -1,34 +1,44 @@
-// import * as THREE from '../node_modules/three/build/three.cjs';
+import * as THREE from 'three';
 import AudioAnalyser from './audio-analyser';
-// import { SpectrumVis } from './visualizers';
+import { SpectrumVis } from './visualizers';
+let width;
+let height;
+let renderer;
+let audioAnalyser;
+let spectrumVis;
 
-console.log("Hello from main.js")
+function insertVis() {
+  width = document.body.clientWidth
+  height = document.body.clientHeight
 
-// create renderer
-// const rendererContainer = document.getElementById("renderer-container");
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(width, height);
 
-// const width = rendererContainer.offsetWidth;
-// const height = rendererContainer.offsetHeight;
+  // create audio analyser node
+  audioAnalyser = new AudioAnalyser();
 
-// const renderer = new THREE.WebGLRenderer();
-// renderer.setSize( width, height);
-// rendererContainer.appendChild( renderer.domElement );
+  // create visualizer
+  spectrumVis = new SpectrumVis(renderer, audioAnalyser, width, height)
 
-// create audio analyser node
-const audioAnalyser= new AudioAnalyser();
+  document.body.appendChild(renderer.domElement);;
 
-// create visualizer
-// const spectrumVis = new SpectrumVis(renderer, audioAnalyser, width, height)
+}
+
 
 /**
  * Load and play audio from filesystem
  */
-function play(message) {
-  console.log("Hello from main play")
-  audioAnalyser.play(message.data);      
-
-  // renderer.setAnimationLoop( spectrumVis.animate );
-  
+function play() {
+  const request = new XMLHttpRequest();
+  request.open("GET", browser.runtime.getURL("public/test6.mp3"));
+  request.responseType = "arraybuffer";
+  request.onload = function () {
+    const undecodedAudio = request.response;
+    audioAnalyser.play(undecodedAudio);
+  };
+  request.send();
+  renderer.setAnimationLoop(spectrumVis.animate);
 }
 
-browser.runtime.onMessage.addListener(play);
+insertVis();
+play();

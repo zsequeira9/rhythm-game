@@ -1,20 +1,19 @@
 import * as THREE from 'three';
-import AudioAnalyser from './audio-analyser';
 
 export class SpectrumVis {
-    renderer: THREE.WebGLRenderer
-    audioAnalyser: AudioAnalyser
-    height: number
-    scene: THREE.Scene
-    camera: THREE.OrthographicCamera
-    bars: THREE.Mesh[] = []
-    sizeBin: number
-    animate: () => void
+    renderer
+    audioAnalyser
+    height
+    scene
+    camera
+    bars = []
+    sizeBin
+    animate
     constructor(
-        renderer: THREE.WebGLRenderer,
-        audioAnalyser: AudioAnalyser,
-        width: number,
-        height: number,
+        renderer,
+        audioAnalyser,
+        width,
+        height,
         numBars = 128
     ){
         this.renderer = renderer
