@@ -1,4 +1,3 @@
-const baseManifest = require("./manifest.json");
 const path = require('path');
 
 module.exports = {
@@ -6,7 +5,6 @@ module.exports = {
     devtool: "cheap-module-source-map",
     entry: {
         main: path.join(__dirname, './src/main'),
-        content: path.join(__dirname, './content_scripts/content'),
     },
     output: {
         filename: '[name].bundle.js',

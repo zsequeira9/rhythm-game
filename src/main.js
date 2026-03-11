@@ -7,24 +7,6 @@ let renderer;
 let audioAnalyser;
 let spectrumVis;
 
-function insertVis() {
-  width = document.body.clientWidth
-  height = document.body.clientHeight
-
-  renderer = new THREE.WebGLRenderer();
-  renderer.setSize(width, height);
-
-  // create audio analyser node
-  audioAnalyser = new AudioAnalyser();
-
-  // create visualizer
-  spectrumVis = new SpectrumVis(renderer, audioAnalyser, width, height)
-
-  document.body.appendChild(renderer.domElement);;
-
-}
-
-
 /**
  * Load and play audio from filesystem
  */
@@ -40,5 +22,33 @@ function play() {
   renderer.setAnimationLoop(spectrumVis.animate);
 }
 
-insertVis();
-play();
+width = document.body.clientWidth
+height = document.body.clientHeight
+
+const frame = document.createElement("div")
+
+renderer = new THREE.WebGLRenderer();
+renderer.setSize(width, height);
+
+// create audio analyser node
+audioAnalyser = new AudioAnalyser();
+
+// create visualizer
+spectrumVis = new SpectrumVis(renderer, audioAnalyser, width, height)
+
+const btn = document.createElement("button")
+btn.onclick = play;
+btn.textContent = 'test value';
+
+frame.appendChild(btn)
+frame.appendChild(renderer.domElement);
+document.body.appendChild(frame);
+
+function listener(message) {
+  console.log(message)
+  if (message.message = "play") {
+    play();
+  }
+}
+
+browser.runtime.onMessage.addListener(listener);

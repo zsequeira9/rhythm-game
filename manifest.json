@@ -31,7 +31,6 @@
     "web_accessible_resources": [
         "/index.html",
         "/public/test6.mp3"
-        
     ],
-    "content_security_policy":  "script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'"
+    "content_security_policy": "script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'"
 }
