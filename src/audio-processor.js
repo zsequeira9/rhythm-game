@@ -1,5 +1,8 @@
-import { EssentiaWASM } from "essentia.js";
-import Essentia from "essentia.js";
+import { EssentiaWASM } from "../node_modules/essentia.js/dist/essentia-wasm.es.js";
+import Essentia from "../node_modules/essentia.js/dist/essentia.js-core.es.js";
+
+// import { EssentiaWASM } from "essentia.js";
+// import Essentia from "essentia.js";
 
 const median = (arr) => arr.toSorted()[arr.length/2]
 const mean = (arr) => arr.reduce((acc, curr) => acc + curr, 0) / arr.length

@@ -1,4 +1,5 @@
-// import { createAudioProcessor } from "./audio-processor-node"
+import { createAudioProcessor } from "./audio-processor-node.js"
+
 export default class AudioAnalyser {
   audioCtx
   buffer = null
@@ -42,14 +43,14 @@ export default class AudioAnalyser {
         let source = this.audioCtx.createBufferSource();
         source.buffer = data;
         if (!this.processor) {
-          // createAudioProcessor(this.audioCtx).then((processor) => {
-            // this.processor = processor
-            // source.connect(this.processor);
-            // this.processor.connect(this.beatAnalyser)
+          createAudioProcessor(this.audioCtx).then((processor) => {
+            this.processor = processor
+            source.connect(this.processor);
+            this.processor.connect(this.beatAnalyser)
             source.connect(this.freqAnalyser);
             source.connect(this.audioCtx.destination);
             source.start(); 
-        // })
+        })
     }
     }, (error) => console.log("Could not decode audio: ", error));
   }

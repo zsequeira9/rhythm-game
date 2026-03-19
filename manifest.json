@@ -24,13 +24,17 @@
                 "<all_urls>"
             ],
             "js": [
-                "dist/main.bundle.js"
+                "wrapper.js"
             ]
         }
     ],
+    "background": {
+        "scripts": ["dist/background.bundle.js"]
+    },
     "web_accessible_resources": [
-        "/index.html",
-        "/public/test6.mp3"
+        "/public/test6.mp3",
+        "/src/*.js",
+        "/node_modules/*"
     ],
     "content_security_policy": "script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval'"
 }
