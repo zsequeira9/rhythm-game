@@ -19,7 +19,8 @@ import { SpectrumVis } from './visualizers.js';
    */
   function play() {
     const request = new XMLHttpRequest();
-    request.open("GET", "moz-extension://7ac8bdb6-6c65-4a7b-82a5-4ec7a45e6e91/public/test6.mp3");
+    const audioUrl = new URL("../public/test1.mp3", import.meta.url)
+    request.open("GET", audioUrl);
     request.responseType = "arraybuffer";
     request.onload = function () {
       const undecodedAudio = request.response;

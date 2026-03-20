@@ -28,11 +28,9 @@
             ]
         }
     ],
-    "background": {
-        "scripts": ["dist/background.bundle.js"]
-    },
     "web_accessible_resources": [
-        "/public/test6.mp3",
+        "/public/*.mp3",
+        "/public/*.flac",
         "/src/*.js",
         "/node_modules/*"
     ],

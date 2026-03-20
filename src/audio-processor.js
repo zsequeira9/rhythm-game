@@ -1,5 +1,5 @@
-import { EssentiaWASM } from "../node_modules/essentia.js/dist/essentia-wasm.es.js";
-import Essentia from "../node_modules/essentia.js/dist/essentia.js-core.es.js";
+import { EssentiaWASM } from "https://cdn.jsdelivr.net/npm/essentia.js@0.1.3/dist/essentia-wasm.es.js";
+import Essentia from "https://cdn.jsdelivr.net/npm/essentia.js@0.1.3/dist/essentia.js-core.es.js";
 
 // import { EssentiaWASM } from "essentia.js";
 // import Essentia from "essentia.js";

@@ -1,1 +1,0 @@
-console.log(browser.runtime.getURL("public/test6.mp3"))
