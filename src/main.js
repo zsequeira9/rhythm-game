@@ -1,6 +1,7 @@
 import * as THREE from '../node_modules/three/build/three.module.js';
 import AudioAnalyser from './audio-analyser.js';
 import { SpectrumVis } from './visualizers.js';
+import { getVideo, logChanges, observerOptions } from './connector.js'
 
 // import * as THREE from 'three';
 // import AudioAnalyser from './audio-analyser';
@@ -14,19 +15,13 @@ import { SpectrumVis } from './visualizers.js';
   let audioAnalyser;
   let spectrumVis;
 
+  let audioSource = getVideo();
+
   /**
    * Load and play audio from filesystem
    */
-  function play() {
-    const request = new XMLHttpRequest();
-    const audioUrl = new URL("../public/test1.mp3", import.meta.url)
-    request.open("GET", audioUrl);
-    request.responseType = "arraybuffer";
-    request.onload = function () {
-      const undecodedAudio = request.response;
-      audioAnalyser.play(undecodedAudio);
-    };
-    request.send();
+  function play(element) {
+    audioAnalyser.play(element);
     renderer.setAnimationLoop(spectrumVis.animate);
   }
 
@@ -43,12 +38,23 @@ import { SpectrumVis } from './visualizers.js';
 
   // create visualizer
   spectrumVis = new SpectrumVis(renderer, audioAnalyser, width, height)
-
-  const btn = document.createElement("button")
-  btn.onclick = play;
-  btn.textContent = 'test value';
-
-  frame.appendChild(btn)
   frame.appendChild(renderer.domElement);
   document.body.appendChild(frame);
+
+  const setUpAudioSource = () => {
+    audioSource = getVideo();
+    audioSource.onplay = (event) => play(event.target);
+  }
+
+  if (!audioSource) {
+    addEventListener("newVideo", setUpAudioSource);
+
+    const body = document.getElementsByTagName("body")[0];
+
+    const observer = new MutationObserver(logChanges);
+    observer.observe(body, observerOptions);
+  } else {
+    audioSource.onplay = (event) => play(event.target);
+  }
+
 })().catch(e => console.error(e));

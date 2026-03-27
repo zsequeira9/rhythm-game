@@ -3,3 +3,4 @@ node_modules/
 public/*.flac
 public/*.mp3
 dist/
+test/
