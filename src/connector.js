@@ -5,7 +5,7 @@ export function getVideo() {
 	return document.getElementsByTagName("video")[0]
 }
 
-export function logChanges(records, observer) {
+export function videoLoaded(records, observer) {
 	for (const record of records) {
 		for (const addedNode of record.addedNodes) {
 			if (addedNode.tagName == "VIDEO") {
