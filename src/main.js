@@ -26,9 +26,6 @@ import { getVideo, videoLoaded, observerOptions } from './connector.js'
   renderer = new THREE.WebGLRenderer();
   renderer.setSize(width, height);
 
-  // create visualizer
-  audioAnalyser = new AudioAnalyser();
-  spectrumVis = new SpectrumVis(renderer, audioAnalyser, width, height)
   frame.appendChild(renderer.domElement);
   document.body.appendChild(frame);
 
@@ -36,9 +33,20 @@ import { getVideo, videoLoaded, observerOptions } from './connector.js'
    * Trigger vis on playback
    */
   function setupVis() {
-    audioSource.onplay = (event) => {
-      audioAnalyser.play(event.target);
+    audioSource.onplay = () => {
+      // create visualizer
+      if (!audioAnalyser) {
+        audioAnalyser = new AudioAnalyser();
+        spectrumVis = new SpectrumVis(renderer, audioAnalyser, width, height)
+      }
+
+      audioAnalyser.setSource(audioSource)
+      audioAnalyser.play();
       renderer.setAnimationLoop(spectrumVis.animate);
+    }
+
+    audioSource.onpause = () => {
+      audioAnalyser.suspend();
     }
   }
 

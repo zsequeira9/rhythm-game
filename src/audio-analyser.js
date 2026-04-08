@@ -2,17 +2,17 @@ import { createAudioProcessor } from "./audio-processor-node.js"
 
 export default class AudioAnalyser {
   audioCtx
-  buffer = null
   freqAnalyser
   processor
   beatAnalyser
-
+  source = ""
   fftSize
   dataArray
   isBeat
+
   constructor(fftSize = 2048) {
-    this.audioCtx = new AudioContext()
-    this.freqAnalyser = this.audioCtx.createAnalyser()
+    this.audioCtx = new AudioContext();
+    this.freqAnalyser = this.audioCtx.createAnalyser();
     this.beatAnalyser = this.audioCtx.createAnalyser();
 
     this.fftSize = fftSize;
@@ -34,18 +34,41 @@ export default class AudioAnalyser {
     return this.isBeat[0] >= .5
   }
 
-  /**
-   * Play the audio source through destination
-   *  and analyser
-   */
-  play(myAudio) {
-    const source = this.audioCtx.createMediaElementSource(myAudio)
-    createAudioProcessor(this.audioCtx).then((processor) => {
-      this.processor = processor
+  setSource(myAudio) {
+    // connect audio nodes
+    const connectSource = (source) => {
+      this.source = source.id
       source.connect(this.processor);
       this.processor.connect(this.beatAnalyser)
       source.connect(this.freqAnalyser);
       source.connect(this.audioCtx.destination);
-    })
+    }
+
+    // add source if not the existing source
+    const source = this.audioCtx.createMediaElementSource(myAudio)
+    if (source.id != this.source) {
+      if (!this.processor) {
+        createAudioProcessor(this.audioCtx).then((processor) => {
+          this.processor = processor
+          connectSource(source)
+        })
+      } else {
+        connectSource(source)
+      }
+    }
+  }
+
+  /**
+   * Start audio context
+   */
+  play() {
+    this.audioCtx.resume().then(() => console.log("Audio context resumed"));
+  }
+
+  /**
+   * Suspend audio context
+   */
+  suspend() {
+    this.audioCtx.suspend().then(() => console.log("audio context suspended"));
   }
 }

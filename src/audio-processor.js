@@ -44,7 +44,6 @@ class AudioProcessor extends AudioWorkletProcessor {
     this.essentia = new Essentia(EssentiaWASM);
     this.hcfOnsets = new OnsetDetector(this.essentia, "hfc", 0.1)
     this.fluxOnsets = new OnsetDetector(this.essentia, "flux", 0.2)
-    console.log('Backend - essentia:' + this.essentia.version + '- http://essentia.upf.edu');
   }
 
   //System-invoked process callback function.
