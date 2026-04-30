@@ -29,8 +29,6 @@
         }
     ],
     "web_accessible_resources": [
-        "/public/*.mp3",
-        "/public/*.flac",
         "/src/*.js",
         "/node_modules/*"
     ],

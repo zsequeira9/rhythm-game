@@ -65,7 +65,7 @@ export class SpectrumVis {
         this.sizeBin = audioAnalyser.fftSize / numBars
 
         /**
-         * Animate the cubes based on waveform data
+         * Animate the bars based on waveform data
          */
         this.animate = () => {
             const freqData = this.audioAnalyser.frequencyData;
@@ -78,6 +78,49 @@ export class SpectrumVis {
                 const barHeight = avg/255 * this.height
                 this.bars[i].scale.y = barHeight;
                 this.bars[i].position.y = barHeight / 2 + this.height / -2;
+            }
+            
+            this.renderer.render( this.scene, this.camera );
+        }
+    }
+
+}
+
+
+export class BeatVis {
+    renderer
+    audioAnalyser
+    scene
+    camera
+    animate
+    constructor(
+        renderer,
+        audioAnalyser,
+        width,
+        height,
+    ){
+        this.renderer = renderer
+        this.audioAnalyser = audioAnalyser
+
+        // create ThreeJS scene
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.OrthographicCamera( width / - 2, width / 2, height / 2, height / - 2, 1, 1000 );
+        this.camera.position.z = 10;
+
+        const geometry = new THREE.PlaneGeometry( 100, 100 );
+        const material = new THREE.MeshBasicMaterial( { color: 0x00fff0, transparent: true } );
+
+        const cube = new THREE.Mesh( geometry, material );
+        this.scene.add(cube);
+        
+        /**
+         * Animate to the beat
+         */
+        this.animate = () => {
+            if (this.audioAnalyser.onsetDetection) {
+                cube.material.opacity = 1
+            } else {
+                cube.material.opacity -= .1
             }
             
             this.renderer.render( this.scene, this.camera );

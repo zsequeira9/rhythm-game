@@ -10,8 +10,9 @@ export default class AudioAnalyser {
   dataArray
   isBeat
 
-  constructor(fftSize = 2048) {
-    this.audioCtx = new AudioContext();
+  constructor(audioCtx, processor, fftSize) {
+    this.audioCtx = audioCtx;
+    this.processor = processor;
     this.freqAnalyser = this.audioCtx.createAnalyser();
     this.beatAnalyser = this.audioCtx.createAnalyser();
 
@@ -24,6 +25,12 @@ export default class AudioAnalyser {
     this.isBeat = new Float32Array(this.beatAnalyser.frequencyBinCount)
   }
 
+  static async build(fftSize = 2048) {
+    const audioCtx = new AudioContext();
+    const processor = await createAudioProcessor(audioCtx);
+    return new AudioAnalyser(audioCtx, processor, fftSize);
+  }
+
   get frequencyData() {
     this.freqAnalyser.getByteFrequencyData(this.dataArray)
     return this.dataArray;
@@ -34,28 +41,17 @@ export default class AudioAnalyser {
     return this.isBeat[0] >= .5
   }
 
+  /** 
+   * Connect all nodes to source
+   * @param {HTMLMediaElement} myAudio 
+   */
   setSource(myAudio) {
-    // connect audio nodes
-    const connectSource = (source) => {
-      this.source = source.id
-      source.connect(this.processor);
-      this.processor.connect(this.beatAnalyser)
-      source.connect(this.freqAnalyser);
-      source.connect(this.audioCtx.destination);
-    }
-
-    // add source if not the existing source
     const source = this.audioCtx.createMediaElementSource(myAudio)
-    if (source.id != this.source) {
-      if (!this.processor) {
-        createAudioProcessor(this.audioCtx).then((processor) => {
-          this.processor = processor
-          connectSource(source)
-        })
-      } else {
-        connectSource(source)
-      }
-    }
+    this.source = source.id
+    source.connect(this.processor);
+    this.processor.connect(this.beatAnalyser)
+    source.connect(this.freqAnalyser);
+    source.connect(this.audioCtx.destination);
   }
 
   /**

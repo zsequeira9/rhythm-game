@@ -10,11 +10,10 @@ export function videoLoaded(records, observer) {
 		for (const addedNode of record.addedNodes) {
 			if (addedNode.tagName == "VIDEO") {
 				console.log("Added node", addedNode.tagName)
-				const event = new Event("newVideo");
+				const event = new CustomEvent("newVideo", {detail: addedNode});
 				dispatchEvent(event);
 				observer.disconnect();
 			}
-
 		}
 	}
 }

@@ -4,7 +4,7 @@ import Essentia from "../node_modules/essentia.js/dist/essentia.js-core.es.js";
 // import { EssentiaWASM } from "essentia.js";
 // import Essentia from "essentia.js";
 
-const median = (arr) => arr.toSorted()[arr.length/2]
+const median = (arr) => arr.toSorted()[arr.length / 2]
 const mean = (arr) => arr.reduce((acc, curr) => acc + curr, 0) / arr.length
 
 class OnsetDetector {
@@ -38,7 +38,7 @@ class AudioProcessor extends AudioWorkletProcessor {
   bufferCount = 0;
   hcfOnsets;
   fluxOnsets;
-  
+
   constructor() {
     super();
     this.essentia = new Essentia(EssentiaWASM);
@@ -50,35 +50,40 @@ class AudioProcessor extends AudioWorkletProcessor {
   process(inputs, outputs, parameters) {
     // take the first input from list of inputs
     const input = inputs[0]
+    if (input.length != 0) {
+      try {
+        // mix left and right channels
+        const audioLeftChannelData = this.essentia.arrayToVector(input[0]);
+        const audioRightChannelData = this.essentia.arrayToVector(input[1]);
+        const audioDownMixed = this.essentia.MonoMixer(audioLeftChannelData, audioRightChannelData).audio;
+        const audioData = this.essentia.vectorToArray(audioDownMixed);
 
-    // mix left and right channels
-    const audioLeftChannelData = this.essentia.arrayToVector(input[0]);
-    const audioRightChannelData = this.essentia.arrayToVector(input[1]);
-    const audioDownMixed = this.essentia.MonoMixer(audioLeftChannelData, audioRightChannelData).audio;
-    const audioData = this.essentia.vectorToArray(audioDownMixed);
 
-    let intensity = this.essentia.Loudness(audioDownMixed).loudness;
+        let intensity = this.essentia.Loudness(audioDownMixed).loudness;
 
-    // set buffer to input, offset by number of times buffer has been set since buffer has been completely filled
-    this.buffer.set(audioData, this.bufferCount * audioData.length);
-    this.bufferCount += 1;
-    this.bufferCount %= 4;
+        // set buffer to input, offset by number of times buffer has been set since buffer has been completely filled
+        this.buffer.set(audioData, this.bufferCount * audioData.length);
+        this.bufferCount += 1;
+        this.bufferCount %= 4;
 
-    if (this.bufferCount == 3) {
-      const signal = this. essentia.arrayToVector(this.buffer);
+        if (this.bufferCount == 3) {
+          const signal = this.essentia.arrayToVector(this.buffer);
 
-      let spectrum = this.essentia.Spectrum(signal).spectrum;
-      
-      // flag as onset if either hcf or flux detects onsets
-      let tmpHCFOnset = this.hcfOnsets.isOnset(spectrum);
-      let tmpFluxOnset = this.fluxOnsets.isOnset(spectrum);
-      let onset = !this.lastOnset && (tmpHCFOnset || tmpFluxOnset);
+          let spectrum = this.essentia.Spectrum(signal).spectrum;
 
-      this.lastOnset = tmpHCFOnset || tmpFluxOnset;
+          // flag as onset if either hcf or flux detects onsets
+          let tmpHCFOnset = this.hcfOnsets.isOnset(spectrum);
+          let tmpFluxOnset = this.fluxOnsets.isOnset(spectrum);
+          let onset = !this.lastOnset && (tmpHCFOnset || tmpFluxOnset);
 
-      outputs[0][0][0] = Number(onset);
+          this.lastOnset = tmpHCFOnset || tmpFluxOnset;
+
+          outputs[0][0][0] = Number(onset);
+        }
+      } catch (error) {
+        console.log("Audio processor error: ", error)
+      }
     }
-
     return true; // keep the process running
   }
 }
