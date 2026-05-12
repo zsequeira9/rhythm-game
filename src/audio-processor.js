@@ -9,20 +9,16 @@ const mean = (arr) => arr.reduce((acc, curr) => acc + curr, 0) / arr.length
 
 class OnsetDetector {
   essentia;
-  phase;
-  detectedOnsets = [0, 0, 0, 0, 0, 0];
-  method
-  alpha
+  phase = this.essentia.arrayToVector([]);
+  detectedOnsets = [0, 0, 0, 0, 0];
 
-  constructor(essentia, method, alpha) {
+  constructor(essentia) {
     this.essentia = essentia;
-    this.phase = this.essentia.arrayToVector([])
-    this.method = method
-    this.alpha = alpha
   }
 
   isOnset(spectrum) {
-    let detection = this.essentia.OnsetDetection(spectrum, this.phase, this.method).onsetDetection;
+    let hcf = this.essentia.OnsetDetection(spectrum, this.phase, "hcf").onsetDetection;
+    let flux = this.essentia.OnsetDetection(spectrum, this.phase, "flux").onsetDetection;
     this.detectedOnsets.pop();
     this.detectedOnsets.splice(0, 0, detection);
 
@@ -42,8 +38,7 @@ class AudioProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
     this.essentia = new Essentia(EssentiaWASM);
-    this.hcfOnsets = new OnsetDetector(this.essentia, "hfc", 0.1)
-    this.fluxOnsets = new OnsetDetector(this.essentia, "flux", 0.2)
+    this.onsetDetector = new OnsetDetector(this.essentia)
   }
 
   //System-invoked process callback function.
@@ -72,11 +67,7 @@ class AudioProcessor extends AudioWorkletProcessor {
           let spectrum = this.essentia.Spectrum(signal).spectrum;
 
           // flag as onset if either hcf or flux detects onsets
-          let tmpHCFOnset = this.hcfOnsets.isOnset(spectrum);
-          let tmpFluxOnset = this.fluxOnsets.isOnset(spectrum);
-          let onset = !this.lastOnset && (tmpHCFOnset || tmpFluxOnset);
-
-          this.lastOnset = tmpHCFOnset || tmpFluxOnset;
+          let onset
 
           outputs[0][0][0] = Number(onset);
         }

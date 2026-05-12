@@ -10,6 +10,12 @@ export default class AudioAnalyser {
   dataArray
   isBeat
 
+  /**
+   * Called by build function
+   * @param {AudioContext} audioCtx
+   * @param {AudioWorkletNode} processor
+   * @param {number} fftSize 
+   */
   constructor(audioCtx, processor, fftSize) {
     this.audioCtx = audioCtx;
     this.processor = processor;
@@ -25,6 +31,12 @@ export default class AudioAnalyser {
     this.isBeat = new Float32Array(this.beatAnalyser.frequencyBinCount)
   }
 
+  /**
+   * Returns AudioAnalyser instance 
+   *  after async creation of audio worklet.
+   * @param {number} fftSize 
+   * @returns AudioAnalyser class
+   */
   static async build(fftSize = 2048) {
     const audioCtx = new AudioContext();
     const processor = await createAudioProcessor(audioCtx);

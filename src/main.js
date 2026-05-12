@@ -50,7 +50,14 @@ import { getVideo, videoLoaded, observerOptions } from './connector.js'
       renderer.setAnimationLoop(vis.animate);
     }
 
-    audioSource.onpause = () => {
+    audioSource.onpause = async () => {
+      // if first time playing, create audioAnalyser 
+      // TODO: consolidate these
+      if (!audioAnalyser) {
+        audioAnalyser = await AudioAnalyser.build();
+        // vis = new SpectrumVis(renderer, audioAnalyser, width, height)
+        vis = new BeatVis(renderer, audioAnalyser, width, height)
+      }
       audioAnalyser.suspend();
     }
   }
