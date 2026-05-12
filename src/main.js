@@ -42,7 +42,7 @@ import { getVideo, videoLoaded, observerOptions } from './connector.js'
       // if first time playing, create audioAnalyser
       if (!audioAnalyser) {
         audioAnalyser = await AudioAnalyser.build();
-        // vis = new SpectrumVis(renderer, audioAnalyser, width, height)
+        //vis = new SpectrumVis(renderer, audioAnalyser, width, height)
         vis = new BeatVis(renderer, audioAnalyser, width, height)
       }
       audioAnalyser.setSource(audioSource)
@@ -55,7 +55,7 @@ import { getVideo, videoLoaded, observerOptions } from './connector.js'
       // TODO: consolidate these
       if (!audioAnalyser) {
         audioAnalyser = await AudioAnalyser.build();
-        // vis = new SpectrumVis(renderer, audioAnalyser, width, height)
+        //vis = new SpectrumVis(renderer, audioAnalyser, width, height)
         vis = new BeatVis(renderer, audioAnalyser, width, height)
       }
       audioAnalyser.suspend();
