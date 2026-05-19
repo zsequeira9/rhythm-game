@@ -12,32 +12,25 @@ class OnsetDetector {
   phase;
   detectedOnsets = [0, 0, 0, 0, 0];
   threshold = [];
-  // moving average filter?
   alpha = .1;
 
   constructor(essentia) {
     this.essentia = essentia;
     this.phase = this.essentia.arrayToVector([]);
-    this.phase2 = this.essentia.arrayToVector([]);
   }
 
   isOnset(spectrum) {
     let hcf = this.essentia.OnsetDetection(spectrum, this.phase, "hfc").onsetDetection;
-    let flux = this.essentia.OnsetDetection(spectrum, this.phase2, "flux").onsetDetection;
+    let flux = this.essentia.OnsetDetection(spectrum, this.phase, "flux").onsetDetection;
 
-    // todo: smoothing, threshold for silence
-    let detection = hcf * .1 + flux * .2;
+    // todo: smoothing, threshold for silence ?
+    let detection = hcf * .4 + flux * .6;
     this.detectedOnsets.pop();
     this.detectedOnsets.splice(0, 0, detection);
 
     let threshold = median(this.detectedOnsets) + this.alpha * mean(this.detectedOnsets);
 
-    console.log(detection)
-    console.log(this.detectedOnsets)
-    console.log(threshold)
-
     let onsets = this.detectedOnsets.reduce((count, onset) => onset > threshold ? count+1 : count, 0 )
-    console.log(onsets)
     if (onsets > 1) {
       return true
     }
@@ -46,11 +39,8 @@ class OnsetDetector {
 
 class AudioProcessor extends AudioWorkletProcessor {
   essentia;
-  lastOnset = false;
-  buffer = new Float32Array(512);
+  buffer = new Float32Array(1024);
   bufferCount = 0;
-  hcfOnsets;
-  fluxOnsets;
 
   constructor() {
     super();
@@ -71,17 +61,20 @@ class AudioProcessor extends AudioWorkletProcessor {
         const audioData = this.essentia.vectorToArray(audioDownMixed);
 
 
-        let intensity = this.essentia.Loudness(audioDownMixed).loudness;
+        // let intensity = this.essentia.Loudness(audioDownMixed).loudness;
 
-        // set buffer to input, offset by number of times buffer has been set since buffer has been completely filled
-        this.buffer.set(audioData, this.bufferCount * audioData.length);
         this.bufferCount += 1;
-        this.bufferCount %= 4;
-
-        if (this.bufferCount == 3) {
+        this.bufferCount %= 12;
+        // create frames of size 1024, skip every 512
+        if (this.bufferCount < 8) {
+          this.buffer.set(audioData, this.bufferCount * audioData.length);
+        }
+        // when frame is full, do onset analysis
+        else if (this.bufferCount == 8) {
           const signal = this.essentia.arrayToVector(this.buffer);
+          const windowed_signal = this.essentia.Windowing(signal).frame;
 
-          let spectrum = this.essentia.Spectrum(signal).spectrum;
+          let spectrum = this.essentia.Spectrum(windowed_signal).spectrum;
 
           // flag as onset if either hcf or flux detects onsets
           let onset = this.onsetDetector.isOnset(spectrum);
