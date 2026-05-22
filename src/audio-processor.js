@@ -7,11 +7,18 @@ import Essentia from "../node_modules/essentia.js/dist/essentia.js-core.es.js";
 const median = (arr) => arr.toSorted()[Math.floor(arr.length / 2)]
 const mean = (arr) => arr.reduce((acc, curr) => acc + curr, 0) / arr.length
 
+const normalize = (arr) => {
+  const norm = Math.sqrt(arr.reduce((acc, curr) => acc + Math.pow(curr, 2), 0))
+  return arr.map((val) => val / norm)
+}
+
 class OnsetDetector {
   essentia;
   phase;
-  detectedOnsets = [0, 0, 0, 0, 0];
-  threshold = [];
+  // detectedHCFOnsets = [0, 0, 0, 0, 0];
+  // detectedFluxOnsets = [0, 0, 0, 0, 0];
+  onsets = [0, 0, 0, 0, 0]
+  maOnsets = [0, 0, 0, 0, 0]
   alpha = .1;
 
   constructor(essentia) {
@@ -21,19 +28,33 @@ class OnsetDetector {
 
   isOnset(spectrum) {
     let hcf = this.essentia.OnsetDetection(spectrum, this.phase, "hfc").onsetDetection;
+    // this.detectedHCFOnsets.pop();
+    // this.detectedHCFOnsets.splice(0, 0, hcf);
+
     let flux = this.essentia.OnsetDetection(spectrum, this.phase, "flux").onsetDetection;
+    // this.detectedFluxOnsets.pop();
+    // this.detectedFluxOnsets.splice(0, 0, flux);
 
-    // todo: smoothing, threshold for silence ?
-    let detection = hcf * .4 + flux * .6;
-    this.detectedOnsets.pop();
-    this.detectedOnsets.splice(0, 0, detection);
+    // let normalizedFlux = normalize(this.detectedFluxOnsets)
 
-    let threshold = median(this.detectedOnsets) + this.alpha * mean(this.detectedOnsets);
+    // let globalOnsets = normalize(this.detectedHCFOnsets).map((val, idx) => val * .5 + normalizedFlux[idx] * .5);
+    let onset = hcf * .5 + flux * .5
 
-    let onsets = this.detectedOnsets.reduce((count, onset) => onset > threshold ? count+1 : count, 0 )
-    if (onsets > 1) {
-      return true
-    }
+    let lastOnset = this.onsets.pop()
+    let newMAOnset = this.maOnsets[0] + (onset - lastOnset) / this.maOnsets.length
+
+    this.maOnsets.pop()
+    this.maOnsets.splice(0, 0, newMAOnset)
+    this.onsets.splice(0, 0, onset);
+
+    let threshold = median(this.maOnsets) + this.alpha * mean(this.maOnsets);
+
+    let detectedOnsets = this.maOnsets.map((onset) => onset > threshold)
+
+    let isonset = detectedOnsets.reduce((acc, curr, idx, arr) => 
+      acc || (idx > 0 && curr && arr[idx - 1]), false);
+
+    return isonset
   }
 }
 
@@ -45,6 +66,7 @@ class AudioProcessor extends AudioWorkletProcessor {
   constructor() {
     super();
     this.essentia = new Essentia(EssentiaWASM);
+    
     this.onsetDetector = new OnsetDetector(this.essentia)
   }
 
@@ -78,7 +100,9 @@ class AudioProcessor extends AudioWorkletProcessor {
 
           // flag as onset if either hcf or flux detects onsets
           let onset = this.onsetDetector.isOnset(spectrum);
-
+          this.port.postMessage({
+            message: onset,
+          });
           outputs[0][0][0] = Number(onset);
         }
       } catch (error) {

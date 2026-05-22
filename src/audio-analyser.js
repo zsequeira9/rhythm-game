@@ -8,7 +8,9 @@ export default class AudioAnalyser {
   source = ""
   fftSize
   dataArray
-  isBeat
+  onsets
+  prevOnset = 0
+  onsetDelta = .01
 
   /**
    * Called by build function
@@ -19,6 +21,12 @@ export default class AudioAnalyser {
   constructor(audioCtx, processor, fftSize) {
     this.audioCtx = audioCtx;
     this.processor = processor;
+    this.processor.port.onmessage = (event) => {
+      let currTime = this.audioCtx.getOutputTimestamp().contextTime
+      if (event.data.message && currTime - this.prevOnset > this.onsetDelta){
+        this.prevOnset = currTime
+      }
+    };
     this.freqAnalyser = this.audioCtx.createAnalyser();
     this.beatAnalyser = this.audioCtx.createAnalyser();
 
@@ -27,8 +35,9 @@ export default class AudioAnalyser {
     this.freqAnalyser.fftSize = fftSize;
     this.dataArray = new Uint8Array(this.freqAnalyser.frequencyBinCount)
 
-    this.beatAnalyser.fftSize = 2048;
-    this.isBeat = new Float32Array(this.beatAnalyser.frequencyBinCount)
+    this.beatAnalyser.fftSize = 1024;
+    this.onsets = new Float32Array(this.beatAnalyser.frequencyBinCount)
+
   }
 
   /**
@@ -49,8 +58,20 @@ export default class AudioAnalyser {
   }
 
   get onsetDetection() {
-    this.beatAnalyser.getFloatTimeDomainData(this.isBeat)
-    return this.isBeat[0] >= .5
+    // this.beatAnalyser.getFloatTimeDomainData(this.onsets)
+    // let isOnset = false
+    // let currOnset = this.audioCtx.getOutputTimestamp().contextTime
+    // console.log(currOnset - this.prevOnset)
+    // if (this.onsets[0] > .5 && currOnset - this.prevOnset > this.onsetDelta) {
+    //   this.prevOnset = currOnset
+    //   isOnset = true
+    // }
+
+    // return isOnset
+    let currTime = this.audioCtx.getOutputTimestamp().contextTime
+    console.log(currTime - this.prevOnset)
+    return currTime - this.prevOnset < .005
+
   }
 
   /** 
